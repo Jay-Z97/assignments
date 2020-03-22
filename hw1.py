@@ -1,5 +1,5 @@
 from typing import List
-
+from datetime import datetime, date, timedelta
 import pandas as pd
 
 CONFIRMED_CASES_URL = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data" \
@@ -15,13 +15,11 @@ confirmed_cases = pd.read_csv(CONFIRMED_CASES_URL, error_bad_lines=False)
 def poland_cases_by_date(day: int, month: int, year: int = 2020) -> int:
     """
     Returns confirmed infection cases for country 'Poland' given a date.
-
     Ex.
     >>> poland_cases_by_date(7, 3, 2020)
     5
     >>> poland_cases_by_date(11, 3)
     31
-
     :param year: 4 digit integer representation of the year to get the cases for, defaults to 2020
     :param day: Day of month to get the cases for as an integer indexed from 1
     :param month: Month to get the cases for as an integer indexed from 1
@@ -29,19 +27,21 @@ def poland_cases_by_date(day: int, month: int, year: int = 2020) -> int:
     """
     
     # Your code goes here (remove pass)
-    pass
+    data = str(month) + "/" + str(day) + "/20"
+    poland_row = confirmed_cases[(confirmed_cases['Country/Region'] == 'Poland')]
+    poland_cases = int(poland_row[data])
+
+    return poland_cases
 
 
 def top5_countries_by_date(day: int, month: int, year: int = 2020) -> List[str]:
     """
     Returns the top 5 infected countries given a date (confirmed cases).
-
     Ex.
     >>> top5_countries_by_date(27, 2, 2020)
     ['China', 'Korea, South', 'Cruise Ship', 'Italy', 'Iran']
     >>> top5_countries_by_date(12, 3)
     ['China', 'Italy', 'Iran', 'Korea, South', 'France']
-
     :param day: 4 digit integer representation of the year to get the countries for, defaults to 2020
     :param month: Day of month to get the countries for as an integer indexed from 1
     :param year: Month to get the countries for as an integer indexed from 1
@@ -49,20 +49,23 @@ def top5_countries_by_date(day: int, month: int, year: int = 2020) -> List[str]:
     """
 
     # Your code goes here (remove pass)
-    pass
+    data = str(month) + "/" + str(day) + "/20" 
+    data_by_country = confirmed_cases.groupby(['Country/Region']).sum()
+    top5_table = data_by_country.nlargest(5, data).reset_index()
+    top5_countries = [country for country in top5_table['Country/Region']]
+
+    return top5_countries
 
 # Function name is wrong, read the pydoc
 def no_new_cases_count(day: int, month: int, year: int = 2020) -> int:
     """
     Returns the number of countries/regions where the infection count in a given day
     was NOT the same as the previous day.
-
     Ex.
     >>> no_new_cases_count(11, 2, 2020)
     35
     >>> no_new_cases_count(3, 3)
     57
-
     :param day: 4 digit integer representation of the year to get the cases for, defaults to 2020
     :param month: Day of month to get the countries for as an integer indexed from 1
     :param year: Month to get the countries for as an integer indexed from 1
@@ -70,4 +73,16 @@ def no_new_cases_count(day: int, month: int, year: int = 2020) -> int:
     """
     
     # Your code goes here (remove pass)
-    pass
+
+    # Given day
+    data = str(month) + "/" + str(day) + "/20" 
+
+    # A day before given day
+    previous_day = date(year, month, day) - timedelta(days=1)
+    data_p = datetime.strftime(previous_day, "%-m/%-d/%y")
+
+    # data_by_country = confirmed_cases.groupby(['Country/Region']).sum().reset_index()
+
+    country_table = confirmed_cases[confirmed_cases[data] != confirmed_cases[data_p]]
+
+    return len(country_table)
